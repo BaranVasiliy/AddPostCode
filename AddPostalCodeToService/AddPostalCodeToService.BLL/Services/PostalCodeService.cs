@@ -32,10 +32,6 @@ namespace AddPostalCodeToService.BLL.Services
                     UpdatedAt = _time,
                     IsDeleted = false
                 };
-                if ( != code)
-                {
-                    _unitOfWork.PostalCodeRepository.Add(postalCode);
-                }
             }
 
             List<PostalCode> codes = (await _unitOfWork.PostalCodeRepository.GetAllAsync()).ToList();
