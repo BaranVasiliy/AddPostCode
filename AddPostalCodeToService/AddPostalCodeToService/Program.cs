@@ -10,6 +10,7 @@ using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace AddPostalCodeToService
@@ -35,7 +36,11 @@ namespace AddPostalCodeToService
                         ServiceLifetime.Transient)
                 .BuildServiceProvider();
 
-            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(@"C:\Users\vbara2\Documents\todd.io.services\Todd.IO.PostalCode\files\ZIP.xlsx")))
+            Console.WriteLine("enter path to file");
+
+            string pathToFile = Console.ReadLine();
+
+            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo($@"{pathToFile}")))
             {
                 foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
                 {
@@ -51,6 +56,8 @@ namespace AddPostalCodeToService
                     }
                 }
             }
+
+            Console.WriteLine("enter service id");
 
             Guid id = Guid.Parse(Console.ReadLine());
 
