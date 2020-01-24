@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using AddPostalCodeToService.BLL.DTOs.PostalCodeDto;
-using AddPostalCodeToService.BLL.Services.Contracts;
+﻿using AddPostalCodeToService.BLL.Services.Contracts;
+using AddPostalCodeToService.DAL.DataContext;
 using AddPostalCodeToService.DAL.Entities;
 using AddPostalCodeToService.DAL.UnitOfWork.Contracts;
-using AutoMapper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AddPostalCodeToService.BLL.Services
 {
@@ -16,7 +15,7 @@ namespace AddPostalCodeToService.BLL.Services
 
         private readonly DateTime _time = DateTime.UtcNow;
 
-        public PostalCodeService(IUnitOFWork unitOfWork)
+        public PostalCodeService(IUnitOFWork unitOfWork, ContextDb context) 
         {
             _unitOfWork = unitOfWork;
         }
@@ -33,10 +32,16 @@ namespace AddPostalCodeToService.BLL.Services
                     UpdatedAt = _time,
                     IsDeleted = false
                 };
-
-                _unitOfWork.PostalCodeRepository.Add(postalCode);
+                if ( != code)
+                {
+                    _unitOfWork.PostalCodeRepository.Add(postalCode);
+                }
             }
+
+            List<PostalCode> codes = (await _unitOfWork.PostalCodeRepository.GetAllAsync()).ToList();
+
             await _unitOfWork.SaveAsync();
+                
         }
     }
     

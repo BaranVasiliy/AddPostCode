@@ -1,6 +1,6 @@
-﻿using System;
+﻿using AddPostalCodeToService.DAL.Repositories.Contracts;
+using System;
 using System.Threading.Tasks;
-using AddPostalCodeToService.DAL.Repositories.Contracts;
 
 namespace AddPostalCodeToService.DAL.UnitOfWork.Contracts
 {

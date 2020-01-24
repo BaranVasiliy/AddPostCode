@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using AddPostalCodeToService.DAL.DataContext;
+﻿using AddPostalCodeToService.DAL.DataContext;
 using AddPostalCodeToService.DAL.Repositories;
 using AddPostalCodeToService.DAL.Repositories.Contracts;
 using AddPostalCodeToService.DAL.UnitOfWork.Contracts;
+using System;
+using System.Threading.Tasks;
 
 namespace AddPostalCodeToService.DAL.UnitOfWork
 {
@@ -13,14 +11,14 @@ namespace AddPostalCodeToService.DAL.UnitOfWork
     {
         private readonly ContextDb _context;
 
-        private IPostalCodeRepository _userRepository;
+        private IPostalCodeRepository _postalCodeRepository;
 
         public EfUnitOfWork(ContextDb context)
         {
             _context = context;
         }
 
-        public IPostalCodeRepository PostalCodeRepository => _userRepository ?? (_userRepository = new PostalCodeRepository(_context));
+        public IPostalCodeRepository PostalCodeRepository => _postalCodeRepository ?? (_postalCodeRepository = new PostalCodeRepository(_context));
 
         public async Task SaveAsync()
         {

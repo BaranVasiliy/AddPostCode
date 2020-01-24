@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using AddPostalCodeToService.BLL.Services;
 using AddPostalCodeToService.BLL.Services.Contracts;
 using AddPostalCodeToService.DAL.DataContext;
@@ -19,50 +20,45 @@ namespace AddPostalCodeToService
     {
         static readonly List<string> ExcelData = new List<string>();
 
-        static void Main(string[] args)
-        {
+        static async Task Main(string[] args)
+        { 
             var configurationBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-            IConfigurationRoot configuration = configurationBuilder.Build();
+                IConfigurationRoot configuration = configurationBuilder.Build();
 
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
+                var serviceProvider = new ServiceCollection()
+                    .AddLogging()
+                    .AddTransient<IPostalCodeService, PostalCodeService>()
+                    .AddTransient<IUnitOFWork, EfUnitOfWork>()
+                    .AddDbContext<ContextDb>(
+                        options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")),
+                        ServiceLifetime.Transient)
+                    .BuildServiceProvider();
 
-
-
-            var serviceProvider = new ServiceCollection()
-                .AddLogging()
-                .AddTransient<IPostalCodeService, PostalCodeService>()
-                .AddTransient<IUnitOFWork, EfUnitOfWork>()
-                .AddDbContext<ContextDb>(
-                    options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")),
-                    ServiceLifetime.Transient)
-                .BuildServiceProvider();
-
-            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(@"C:\Users\vbara2\Documents\todd.io.services\Todd.IO.PostalCode\files\ZIP.xlsx")))
-            {
-                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(@"C:\Users\vbara2\Documents\todd.io.services\Todd.IO.PostalCode\files\ZIP.xlsx")))
                 {
-                    for (int i = 2; i <= worksheet.Dimension.End.Row; i++)
+                    foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
                     {
-                        for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
+                        for (int i = 2; i <= worksheet.Dimension.End.Row; i++)
                         {
-                            if (worksheet.Cells[i, j].Value != null)
+                            for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
                             {
-                                ExcelData.Add(worksheet.Cells[i, j].Value.ToString());
+                                if (worksheet.Cells[i, j].Value != null)
+                                {
+                                    ExcelData.Add(worksheet.Cells[i, j].Value.ToString());
+                                }
                             }
                         }
                     }
-                }
             }
 
             Guid id = Guid.Parse(Console.ReadLine());
 
             IPostalCodeService postalCode = serviceProvider.GetService<IPostalCodeService>();
-
-            postalCode.AddPostalCodeToServiceAsync(id,ExcelData);
-
+            
+            await postalCode.AddPostalCodeToServiceAsync(id, ExcelData);
         }
     }
 }
