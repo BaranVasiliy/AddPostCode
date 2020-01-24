@@ -21,13 +21,13 @@ namespace AddPostalCodeToService
 
         static async Task Main(string[] args)
         { 
-            var configurationBuilder = new ConfigurationBuilder()
+            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
             IConfigurationRoot configuration = configurationBuilder.Build();
 
-            var serviceProvider = new ServiceCollection()
+            ServiceProvider serviceProvider = new ServiceCollection()
                 .AddLogging()
                 .AddTransient<IPostalCodeService, PostalCodeService>()
                 .AddTransient<IUnitOFWork, EfUnitOfWork>()

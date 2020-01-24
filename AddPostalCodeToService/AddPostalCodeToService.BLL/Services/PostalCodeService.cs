@@ -22,6 +22,10 @@ namespace AddPostalCodeToService.BLL.Services
 
         public async Task AddPostalCodeToServiceAsync(Guid id, List<string> postCode)
         {
+            List<PostalCode> dbPostalCodes = await _unitOfWork.PostalCodeRepository.GetPosCodeByServiceId(id);
+
+            postCode = postCode.Where(t => dbPostalCodes.All(p => p.Code != t)).ToList();
+            
             foreach (var code in postCode)
             {
                 PostalCode postalCode = new PostalCode
@@ -32,13 +36,10 @@ namespace AddPostalCodeToService.BLL.Services
                     UpdatedAt = _time,
                     IsDeleted = false
                 };
+                _unitOfWork.PostalCodeRepository.Add(postalCode);
             }
 
-            List<PostalCode> codes = (await _unitOfWork.PostalCodeRepository.GetAllAsync()).ToList();
-
             await _unitOfWork.SaveAsync();
-                
         }
     }
-    
 }
