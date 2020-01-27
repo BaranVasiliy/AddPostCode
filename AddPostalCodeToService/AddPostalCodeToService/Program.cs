@@ -1,23 +1,25 @@
-﻿using AddPostalCodeToService.BLL.Services;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using AddPostalCodeToService.BLL.Services;
 using AddPostalCodeToService.BLL.Services.Contracts;
 using AddPostalCodeToService.DAL.DataContext;
+using AddPostalCodeToService.DAL.Entities;
 using AddPostalCodeToService.DAL.UnitOfWork;
 using AddPostalCodeToService.DAL.UnitOfWork.Contracts;
+using AddPostalCodeToService.Models;
+using CsvHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace AddPostalCodeToService
 {
     public class Program
     {
-        static readonly List<string> ExcelData = new List<string>();
+        static List<PostalCodes> listPostalCodes = new List<PostalCodes>();
 
         static async Task Main(string[] args)
         { 
@@ -40,20 +42,16 @@ namespace AddPostalCodeToService
 
             string pathToFile = Console.ReadLine();
 
-            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo($@"{pathToFile}")))
+            using (var reader = File.OpenText($@"{pathToFile}"))
             {
-                foreach (ExcelWorksheet worksheet in excelPackage.Workbook.Worksheets)
+                CsvReader csv = new CsvReader(reader);
+                csv.Configuration.Delimiter = ",";
+                csv.Configuration.MissingFieldFound = null;
+                while (csv.Read())
                 {
-                    for (int i = 2; i <= worksheet.Dimension.End.Row; i++)
-                    {
-                        for (int j = worksheet.Dimension.Start.Column; j <= worksheet.Dimension.End.Column; j++)
-                        {
-                            if (worksheet.Cells[i, j].Value != null)
-                            { 
-                                ExcelData.Add(worksheet.Cells[i, j].Value.ToString());
-                            }
-                        }
-                    }
+                    var Record = csv.GetRecord<PostalCodes>();
+
+                    listPostalCodes.Add(Record);
                 }
             }
 
@@ -63,7 +61,7 @@ namespace AddPostalCodeToService
 
             IPostalCodeService postalCode = serviceProvider.GetService<IPostalCodeService>();
             
-            await postalCode.AddPostalCodeToServiceAsync(id, ExcelData);
+            await postalCode.AddPostalCodeToServiceAsync(id, listPostalCodes.Select(t=>t.Zip).ToList());
         }
     }
 }
