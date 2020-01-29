@@ -55,13 +55,15 @@ namespace AddPostalCodeToService
                 }
             }
 
+            List<string> noDupes = listPostalCodes.Select(t=>t.Zip).Distinct().ToList();
+
             Console.WriteLine("enter service id");
 
             Guid id = Guid.Parse(Console.ReadLine());
 
             IPostalCodeService postalCode = serviceProvider.GetService<IPostalCodeService>();
             
-            await postalCode.AddPostalCodeToServiceAsync(id, listPostalCodes.Select(t=>t.Zip).ToList());
+            await postalCode.AddPostalCodeToServiceAsync(id, noDupes);
         }
     }
 }
